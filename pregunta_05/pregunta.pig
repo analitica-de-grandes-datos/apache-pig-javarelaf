@@ -12,3 +12,22 @@ $ pig -x local -f pregunta.pig
 
         >>> Escriba su respuesta a partir de este punto <<<
 */
+data = LOAD 'data.tsv' USING PigStorage('\t')
+    AS (
+            mayus:chararray,
+            minus:chararray,
+            claves:int          
+        ); 
+
+filtered_data = FOREACH data GENERATE minus;
+
+filtered_minus = FOREACH filtered_data GENERATE FLATTEN(TOKENIZE(minus)) as letra; 
+
+filtered_letras = FILTER filtered_minus BY (letra MATCHES '.*[a-z].*');
+
+grouped_letra = GROUP filtered_letras BY letra; 
+
+count_letras= FOREACH grouped_letra GENERATE group, COUNT(filtered_letras); 
+
+
+STORE count_letras INTO 'output/' USING PigStorage(',');
